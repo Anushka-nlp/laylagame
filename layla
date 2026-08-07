@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+URL="http://localhost:5173"
+API="http://localhost:3001/api/levels"
+STATE_DIR="$HOME/.layla"
+PID_FILE="$STATE_DIR/layla.pid"
+LOG_SERVER="/tmp/layla-server.log"
+LOG_CLIENT="/tmp/layla-client.log"
+
+all_pids() {
+  [[ -f "$PID_FILE" ]] && cat "$PID_FILE" || true
+}
+
+live_pids() {
+  local pid
+  for pid in $(all_pids); do
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+      echo "$pid"
+    fi
+  done
+}
+
+is_running() {
+  [[ -n "$(live_pids)" ]]
+}
+
+net_up() {
+  curl -sf -o /dev/null "$URL" 2>/dev/null
+}
+
+api_up() {
+  curl -sf -o /dev/null "$API" 2>/dev/null
+}
+
+check_env() {
+  if [[ ! -f "$DIR/server/.env" ]] || ! grep -q "GROQ_API_KEY=gsk_" "$DIR/server/.env" 2>/dev/null; then
+    echo "warning: no real GROQ_API_KEY in server/.env — game questions/hints need it."
+    echo "         fix with: echo 'GROQ_API_KEY=gsk_your_key' > '$DIR/server/.env'"
+  fi
+}
+
+launch() {
+  # start silently in the background; the PID written is the exact process (exec)
+  (cd "$DIR/server" && exec node server.js) >"$LOG_SERVER" 2>&1 < /dev/null &
+  echo $! >> "$PID_FILE"
+  (cd "$DIR/client" && exec node node_modules/vite/bin/vite.js --port 5173) >"$LOG_CLIENT" 2>&1 < /dev/null &
+  echo $! >> "$PID_FILE"
+}
+
+cmd_start() {
+  if is_running; then
+    echo "Layla is already running — $(live_pids | tr '\n' ' ')"
+    return 0
+  fi
+  if ! command -v node >/dev/null 2>&1; then
+    echo "error: Node.js is not installed." >&2
+    exit 1
+  fi
+  check_env
+
+  mkdir -p "$STATE_DIR"
+  rm -f "$PID_FILE"
+  launch
+
+  echo "starting Layla…"
+  local tries=0
+  until api_up && net_up; do
+    tries=$((tries + 1))
+    if [[ $tries -gt 40 ]]; then
+      echo "error: services did not come up. See $LOG_SERVER and $LOG_CLIENT" >&2
+      cmd_stop >/dev/null || true
+      exit 1
+    fi
+    sleep 0.5
+  done
+  echo "Layla is running — $URL"
+}
+
+cmd_stop() {
+  if is_running; then
+    for pid in $(live_pids); do
+      kill "$pid" 2>/dev/null || true
+    done
+    sleep 1
+  fi
+  rm -f "$PID_FILE"
+  echo "Layla stopped."
+}
+
+cmd_status() {
+  if is_running; then
+    echo "status: running (pids: $(live_pids | tr '\n' ' '))"
+  else
+    echo "status: stopped"
+  fi
+  echo "game url: $URL"
+  [[ -f "$LOG_SERVER" ]] && echo "server log: $LOG_SERVER"
+  [[ -f "$LOG_CLIENT" ]] && echo "client log: $LOG_CLIENT"
+}
+
+cmd_open() {
+  if ! is_running; then
+    cmd_start
+  fi
+  if command -v open >/dev/null 2>&1; then
+    open "$URL"
+  else
+    echo "open $URL in your browser"
+  fi
+}
+
+case "${1:-}" in
+  start)   cmd_start ;;
+  stop)    cmd_stop ;;
+  restart) cmd_stop; cmd_start ;;
+  status)  cmd_status ;;
+  "")      cmd_open ;;
+  *)       echo "usage: layla [start|stop|restart|status]" >&2; exit 1 ;;
+esac

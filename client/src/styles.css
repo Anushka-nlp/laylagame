@@ -1,0 +1,385 @@
+:root {
+  --bg: #0d0f1a;
+  --panel: #151829;
+  --panel-2: #1c2036;
+  --accent: #ff6ad5;
+  --accent-2: #7c5cff;
+  --text: #eef0ff;
+  --muted: #8b90b0;
+  --good: #4ade80;
+  --bad: #f87171;
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: radial-gradient(1200px 800px at 20% -10%, #2a1440 0%, var(--bg) 55%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.screen {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.loading {
+  color: var(--muted);
+  font-size: 18px;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.title {
+  font-size: 64px;
+  letter-spacing: 12px;
+  margin: 0 0 8px;
+  font-weight: 900;
+}
+
+.accent {
+  color: var(--accent);
+  text-shadow: 0 0 24px rgba(255, 106, 213, 0.6);
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: 16px;
+  margin: 0;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.level-card {
+  background: var(--panel);
+  border: 1px solid #262b45;
+  border-radius: var(--radius);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  color: var(--text);
+  font: inherit;
+}
+
+.level-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 30px rgba(255, 106, 213, 0.15);
+}
+
+.level-card.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.level-num {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.level-title {
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+}
+
+.level-diff {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.footer-note {
+  color: var(--muted);
+  text-align: center;
+  font-size: 13px;
+  margin-top: 32px;
+}
+
+/* ---------- game ---------- */
+
+.game-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 720px;
+  padding: 0 16px;
+}
+
+.game-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.game-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.level-badge {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.hints {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.game-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- mascot ---------- */
+
+.mascot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin: 6px 0 12px;
+}
+
+.mascot-face {
+  font-size: 52px;
+  line-height: 1;
+  animation: laylaBounce 0.5s ease;
+}
+
+.game-screen .mascot-face {
+  font-size: 44px;
+}
+
+.mascot-name {
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--accent);
+  font-size: 14px;
+}
+
+.mascot-caption {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+@keyframes laylaBounce {
+  0% {
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.chat {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid #262b45;
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.msg.gm {
+  background: var(--panel-2);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.msg.player {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.msg.guess {
+  background: #213325;
+  color: var(--good);
+  align-self: flex-end;
+  border: 1px solid #2f4a36;
+  border-bottom-right-radius: 4px;
+}
+
+.msg.typing {
+  color: var(--muted);
+}
+
+.controls {
+  padding: 14px 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ask-form,
+.guess-form {
+  display: flex;
+  gap: 8px;
+}
+
+input {
+  flex: 1;
+  background: var(--panel);
+  border: 1px solid #2a3052;
+  border-radius: 10px;
+  color: var(--text);
+  padding: 11px 14px;
+  font: inherit;
+  font-size: 14.5px;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--accent);
+}
+
+input:disabled {
+  opacity: 0.5;
+}
+
+.btn {
+  background: var(--panel-2);
+  border: 1px solid #2a3052;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 11px 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.btn:hover:not(:disabled) {
+  background: #262b45;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: none;
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #2a3052;
+  color: var(--muted);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.btn-ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 6, 12, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal {
+  background: var(--panel);
+  border: 1px solid #2a3052;
+  border-radius: 18px;
+  padding: 34px 40px;
+  text-align: center;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.modal h2 {
+  margin: 0 0 10px;
+}
+
+.modal p {
+  color: var(--muted);
+  margin: 0 0 22px;
+}
+
+.modal-sub {
+  margin-top: -12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
