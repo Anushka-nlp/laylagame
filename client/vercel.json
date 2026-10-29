@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://layla-backend-9vvq.onrender.com/api/:path*"
+    }
+  ]
+}
