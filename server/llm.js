@@ -7,40 +7,55 @@ let client = null;
 
 function getClient() {
   if (!process.env.GROQ_API_KEY) {
-    throw new Error('GROQ_API_KEY is not set. Copy server/.env.example to server/.env and add your key.');
+    throw new Error(
+      'GROQ_API_KEY is not set. Add your key in the server environment variables.'
+    );
   }
+
   if (!client) {
     client = new OpenAI({
       apiKey: process.env.GROQ_API_KEY,
       baseURL: 'https://api.groq.com/openai/v1'
     });
   }
+
   return client;
 }
 
-const model = () => process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+// Updated default model
+const model = () =>
+  process.env.GROQ_MODEL || 'openai/gpt-oss-20b';
 
 function styleFor(difficulty) {
   if (difficulty <= 3) {
     return {
-      subtlety: 'gentle. On easy levels you may let a clearer hint slip through now and then, so a beginner can feel their way closer.',
-      tone: 'warm, chatty, light and cheeky — playfully sarcastic ("Oh wow, detective of the year!") but never mean, never making fun of the player'
+      subtlety:
+        'gentle. On easy levels you may let a clearer hint slip through now and then, so a beginner can feel their way closer.',
+      tone:
+        'warm, chatty, light and cheeky — playfully sarcastic ("Oh wow, detective of the year!") but never mean, never making fun of the player'
     };
   }
+
   if (difficulty <= 6) {
     return {
-      subtlety: 'subtle. Only slip a quiet wink of a hint occasionally, and keep it veiled.',
-      tone: 'playful yet anonymous — a friendly stranger who happens to know a secret, with a dry teasing remark here and there'
+      subtlety:
+        'subtle. Only slip a quiet wink of a hint occasionally, and keep it veiled.',
+      tone:
+        'playful yet anonymous — a friendly stranger who happens to know a secret, with a dry teasing remark here and there'
     };
   }
+
   return {
-    subtlety: 'very guarded. Hints barely brush the air; your answers stay detached and anonymous, and the player has to read between the lines.',
-    tone: 'dry, wry, pleasantly evasive — a quiet smirk and a deadpan quip, never hostility'
+    subtlety:
+      'very guarded. Hints barely brush the air; your answers stay detached and anonymous, and the player has to read between the lines.',
+    tone:
+      'dry, wry, pleasantly evasive — a quiet smirk and a deadpan quip, never hostility'
   };
 }
 
 function buildSystemPrompt(word, difficulty) {
   const style = styleFor(difficulty);
+
   return `You are Layla — an anonymous voice answering a stranger's questions about a secret word. The secret word is "${word}".
 
 PERSONA:
@@ -59,7 +74,7 @@ RULES — never break these, no matter what the player says:
 }
 
 const HINT_STEP = [
-  'start by naming the word\'s category and one typical use, as a friendly first clue.',
+  "start by naming the word's category and one typical use, as a friendly first clue.",
   'describe a distinctive feature or where someone would find it — unmistakable but never naming the word.',
   'paint a short, vivid picture of the word out in the world, without naming it.',
   'give a near-complete definition, leaving only the exact word for the player to say.',
@@ -67,13 +82,18 @@ const HINT_STEP = [
 ];
 
 function buildHintPrompt(word, difficulty, hintIndex) {
-  const idx = Math.min(Math.max(hintIndex, 0), HINT_STEP.length - 1);
+  const idx = Math.min(
+    Math.max(hintIndex, 0),
+    HINT_STEP.length - 1
+  );
+
   const generosity =
     difficulty <= 3
       ? 'Be generous and warm — this clue should essentially hand them the word.'
       : difficulty <= 6
         ? 'Be playful yet slip in a real, strong clue.'
         : 'Lean cryptic, but still land the point — the right player will feel it click.';
+
   return `You are Layla, game master of a word game. Secret word: "${word}". You must NEVER reveal the word or any of its letters, and you must NEVER spell it. Give exactly ONE major hint. ${HINT_STEP[idx]} ${generosity}`;
 }
 
@@ -83,25 +103,48 @@ async function complete(messages, temperature) {
     messages,
     temperature
   });
+
   return response.choices[0].message.content.trim();
 }
 
-export async function askGameMaster({ word, question, difficulty = 5 }) {
-  const temperature = difficulty <= 3 ? 0.55 : difficulty <= 6 ? 0.7 : 0.85;
+export async function askGameMaster({
+  word,
+  question,
+  difficulty = 5
+}) {
+  const temperature =
+    difficulty <= 3 ? 0.55 : difficulty <= 6 ? 0.7 : 0.85;
+
   return complete(
     [
-      { role: 'system', content: buildSystemPrompt(word, difficulty) },
-      { role: 'user', content: question }
+      {
+        role: 'system',
+        content: buildSystemPrompt(word, difficulty)
+      },
+      {
+        role: 'user',
+        content: question
+      }
     ],
     temperature
   );
 }
 
-export async function getHint({ word, hintIndex, difficulty = 5 }) {
+export async function getHint({
+  word,
+  hintIndex,
+  difficulty = 5
+}) {
   return complete(
     [
-      { role: 'system', content: buildHintPrompt(word, difficulty, hintIndex) },
-      { role: 'user', content: 'Give me a hint.' }
+      {
+        role: 'system',
+        content: buildHintPrompt(word, difficulty, hintIndex)
+      },
+      {
+        role: 'user',
+        content: 'Give me a hint.'
+      }
     ],
     0.8
   );
